@@ -1,6 +1,8 @@
 flask
 twilio
 python-dotenv
+cryptography
 requests
+openai-whisper
+ffmpeg-python
 google-generativeai
-gunicorn
