@@ -1,21 +1,18 @@
 import google.generativeai as genai
-import base64
-
 import os
-from io import BytesIO
+from sanitizer import sanitize_with_whisper
 
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 def transcribe_and_translate(audio_bytes: bytes) -> str:
-    model = genai.GenerativeModel("models/gemini-2.0-flash")
+    # Transcribe + encrypt PINs
+    sanitized_text = sanitize_with_whisper(audio_bytes)
 
-    # Gemini expects audio in WAV or MP3 or OGG – use directly
+    # Send sanitized prompt to Gemini
+    model = genai.GenerativeModel("models/gemini-2.0-flash")
     response = model.generate_content([
-        "You are an AI assistant. Transcribe and translate the given Indian language audio into English.",
-        {
-            "mime_type": "audio/mp3",
-            "data": audio_bytes
-        }
+        "You are an AI assistant. The following message has encrypted values. Do not use [ENCRYPTED] values to make decisions. Respond only based on context.",
+        sanitized_text
     ])
 
     return response.text.strip()
